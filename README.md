@@ -53,6 +53,8 @@ Antes de começar, pergunte se a data deve filtrar um dia exato ou um período a
 | Envia por voz ("pode enviar", "manda ver") | ❌ | ✅ |
 | Ajusta o prompt por voz ("deixa mais curto") | ❌ | ✅ |
 | Histórico com reenvio em um clique | ❌ | ✅ |
+| Ondas da voz ao vivo e "ouvindo" confirmado pelo Windows | ❌ | ✅ |
+| Detecta microfone no mudo e libera com um clique | ❌ | ✅ |
 
 **Fiel, não criativo.** O lapidador é proibido de inventar requisito, etapa, tecnologia ou teste que você não pediu. Se faltar algo essencial, ele fecha o prompt pedindo que o assistente pergunte antes de sair fazendo.
 
@@ -61,7 +63,7 @@ Antes de começar, pergunte se a data deve filtrar um dia exato ou um período a
 1. Baixe o `.vsix` da [última versão](https://github.com/rodrigogadita/diz-ai/releases/latest).
 2. Instale:
    ```
-   code --install-extension diz-ai-1.0.0.vsix
+   code --install-extension diz-ai-1.1.0.vsix
    ```
    Ou, no VS Code, abra **Extensões > ⋯ > Instalar do VSIX**.
 3. Tenha a extensão [Claude Code](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code) instalada e logada. O Diz Aí usa o mesmo login para lapidar. **Não precisa de chave de API.**
@@ -80,7 +82,25 @@ Na primeira abertura, o passo a passo **Primeiros passos** aparece sozinho.
 | `Ctrl+Alt+M` | Dita direto na caixa do chat, sem lapidar. |
 | `Esc` | Cancela gravação ou lapidação. |
 
-O ícone **Diz Aí** na barra de status abre o menu com tudo. O **Histórico** fica na barra lateral.
+O ícone **Diz Aí** na barra de status abre o menu com tudo.
+
+### Onde cada coisa aparece
+
+| O quê | Onde |
+|---|---|
+| **Ondas da sua voz** | Na barra de status (`▂▄▆█▆▄ Ouvindo`), ao lado do cursor no `fala.md` e grandes no painel **Ao vivo** |
+| **O que você disse** | No `fala.md` (à esquerda) e no painel **Ao vivo** |
+| **O prompt nascendo** | No `prompt.md` (à direita, abre sozinho) e no painel **Ao vivo**, em streaming |
+| **Tudo junto** | Painel **Ao vivo**, no ícone do Diz Aí na barra lateral: estado, ondas, fala, prompt e os botões Enviar, Ajustar, Copiar e Modo |
+| **O que já foi** | **Histórico**, logo abaixo do painel Ao vivo |
+
+"Ouvindo" só aparece quando o Windows confirma que o ditado está escutando. Se ele não abrir em 6 segundos, o Diz Aí avisa.
+
+### Não está te ouvindo?
+
+Rode **Diz Aí: testar o microfone** (ou o botão no painel Ao vivo). Ele mede o sinal por 3 segundos, confere se o microfone está no mudo e se o reconhecimento de fala online está ligado, e oferece **Liberar tudo**. O Diz Aí também faz essa checagem sozinho antes de cada ditado.
+
+Causas mais comuns: tecla de microfone do notebook no mudo, reconhecimento de fala online desligado e cursor fora de um campo de texto. O log fica em **Saída > Diz Aí**.
 
 ## Modos de escrita
 

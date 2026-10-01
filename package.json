@@ -2,7 +2,7 @@
   "name": "diz-ai",
   "displayName": "Diz Aí: prompts com a sua voz",
   "description": "Fale a ideia do seu jeito. O Diz Aí transcreve, o Claude lapida num prompt claro e ele chega pronto no Claude Code, no Copilot ou no terminal. Feito para o português do Brasil.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "publisher": "rodrigogadita",
   "author": {
     "name": "Rodrigo Silva",
@@ -64,6 +64,12 @@
     "views": {
       "dizAi": [
         {
+          "type": "webview",
+          "id": "dizAi.aoVivo",
+          "name": "Ao vivo",
+          "icon": "media/barra.svg"
+        },
+        {
           "id": "dizAi.historico",
           "name": "Histórico",
           "icon": "media/barra.svg"
@@ -97,7 +103,9 @@
       { "command": "dizAi.configurar", "title": "Configurações", "category": "Diz Aí", "icon": "$(gear)" },
       { "command": "dizAi.primeirosPassos", "title": "Primeiros passos", "category": "Diz Aí" },
       { "command": "dizAi.configuracoesWindows", "title": "Abrir configurações de voz do Windows", "category": "Diz Aí" },
-      { "command": "dizAi.menu", "title": "Menu", "category": "Diz Aí" }
+      { "command": "dizAi.menu", "title": "Menu", "category": "Diz Aí" },
+      { "command": "dizAi.diagnosticar", "title": "Testar o microfone", "category": "Diz Aí", "icon": "$(debug)" },
+      { "command": "dizAi.mostrarLog", "title": "Mostrar o log", "category": "Diz Aí" }
     ],
     "menus": {
       "editor/title": [
@@ -108,6 +116,8 @@
         { "command": "dizAi.trocarModo", "when": "dizAi.noBloco", "group": "navigation@5" }
       ],
       "view/title": [
+        { "command": "dizAi.diagnosticar", "when": "view == dizAi.aoVivo", "group": "navigation@1" },
+        { "command": "dizAi.configurar", "when": "view == dizAi.aoVivo", "group": "navigation@2" },
         { "command": "dizAi.ditar", "when": "view == dizAi.historico", "group": "navigation@1" },
         { "command": "dizAi.novoBloco", "when": "view == dizAi.historico", "group": "navigation@2" },
         { "command": "dizAi.atualizarHistorico", "when": "view == dizAi.historico", "group": "navigation@3" },
@@ -133,7 +143,7 @@
       { "command": "dizAi.lapidar", "key": "ctrl+alt+l", "mac": "cmd+alt+l" },
       { "command": "dizAi.ajustar", "key": "ctrl+alt+r", "mac": "cmd+alt+r" },
       { "command": "dizAi.enviar", "key": "ctrl+alt+enter", "mac": "cmd+alt+enter", "when": "dizAi.noBloco && !findWidgetVisible" },
-      { "command": "dizAi.cancelar", "key": "escape", "when": "dizAi.gravando || dizAi.lapidando" }
+      { "command": "dizAi.cancelar", "key": "escape", "when": "dizAi.ouvindo || dizAi.lapidando" }
     ],
     "configuration": {
       "title": "Diz Aí",
@@ -169,6 +179,12 @@
           "default": "auto",
           "order": 3,
           "description": "Para onde o prompt vai quando você envia."
+        },
+        "dizAi.mostrarPainel": {
+          "type": "boolean",
+          "default": true,
+          "order": 3.5,
+          "description": "No primeiro ditado da sessão, abrir o painel Ao vivo (ondas da voz, o que você disse e o prompt nascendo)."
         },
         "dizAi.lapidarAoVivo": {
           "type": "boolean",
