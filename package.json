@@ -1,7 +1,7 @@
 {
   "name": "diz-ai",
-  "displayName": "Diz AÃ­: prompts com a sua voz",
-  "description": "Fale a ideia do seu jeito. O Diz AÃ­ transcreve, o Claude lapida num prompt claro e ele chega pronto no Claude Code, no Copilot ou no terminal. Feito para o portuguÃªs do Brasil.",
+  "displayName": "Diz Aí: prompts com a sua voz",
+  "description": "Fale a ideia do seu jeito. O Diz Aí transcreve, o Claude lapida num prompt claro e ele chega pronto no Claude Code, no Copilot ou no terminal. Feito para o português do Brasil.",
   "version": "1.0.0",
   "publisher": "rodrigogadita",
   "author": {
@@ -30,7 +30,7 @@
     "copilot",
     "speech to text",
     "whisper",
-    "portuguÃªs",
+    "português",
     "pt-br",
     "dictation",
     "voice"
@@ -56,7 +56,7 @@
       "activitybar": [
         {
           "id": "dizAi",
-          "title": "Diz AÃ­",
+          "title": "Diz Aí",
           "icon": "media/barra.svg"
         }
       ]
@@ -65,7 +65,7 @@
       "dizAi": [
         {
           "id": "dizAi.historico",
-          "name": "HistÃ³rico",
+          "name": "Histórico",
           "icon": "media/barra.svg"
         }
       ]
@@ -73,31 +73,31 @@
     "viewsWelcome": [
       {
         "view": "dizAi.historico",
-        "contents": "Fale a ideia do seu jeito. O Diz AÃ­ escreve o prompt e entrega no chat.\n[$(mic) Ditar agora](command:dizAi.ditar)\nAtalho: Ctrl+Alt+D para falar, Ctrl+Alt+Enter para enviar.\n[Primeiros passos](command:dizAi.primeirosPassos)"
+        "contents": "Fale a ideia do seu jeito. O Diz Aí escreve o prompt e entrega no chat.\n[$(mic) Ditar agora](command:dizAi.ditar)\nAtalho: Ctrl+Alt+D para falar, Ctrl+Alt+Enter para enviar.\n[Primeiros passos](command:dizAi.primeirosPassos)"
       }
     ],
     "commands": [
-      { "command": "dizAi.ditar", "title": "Ditar", "category": "Diz AÃ­", "icon": "$(mic)" },
-      { "command": "dizAi.ditarNoChat", "title": "Ditar direto no chat", "category": "Diz AÃ­", "icon": "$(comment-discussion)" },
-      { "command": "dizAi.lapidar", "title": "Lapidar a fala em prompt", "category": "Diz AÃ­", "icon": "$(sparkle)" },
-      { "command": "dizAi.ajustar", "title": "Ajustar o prompt por voz", "category": "Diz AÃ­", "icon": "$(edit)" },
-      { "command": "dizAi.enviar", "title": "Enviar", "category": "Diz AÃ­", "icon": "$(send)" },
-      { "command": "dizAi.enviarFala", "title": "Enviar a fala sem lapidar", "category": "Diz AÃ­" },
-      { "command": "dizAi.cancelar", "title": "Cancelar gravaÃ§Ã£o ou lapidaÃ§Ã£o", "category": "Diz AÃ­" },
-      { "command": "dizAi.trocarModo", "title": "Trocar o modo de escrita", "category": "Diz AÃ­", "icon": "$(symbol-namespace)" },
-      { "command": "dizAi.trocarMotor", "title": "Trocar o motor de voz", "category": "Diz AÃ­" },
-      { "command": "dizAi.definirChaveWhisper", "title": "Definir chave do Whisper", "category": "Diz AÃ­" },
-      { "command": "dizAi.novoBloco", "title": "Bloco novo", "category": "Diz AÃ­", "icon": "$(new-file)" },
-      { "command": "dizAi.abrirBloco", "title": "Abrir", "category": "Diz AÃ­" },
-      { "command": "dizAi.reenviar", "title": "Enviar de novo", "category": "Diz AÃ­", "icon": "$(send)" },
-      { "command": "dizAi.copiar", "title": "Copiar prompt", "category": "Diz AÃ­", "icon": "$(copy)" },
-      { "command": "dizAi.excluir", "title": "Excluir", "category": "Diz AÃ­", "icon": "$(trash)" },
-      { "command": "dizAi.atualizarHistorico", "title": "Atualizar", "category": "Diz AÃ­", "icon": "$(refresh)" },
-      { "command": "dizAi.abrirPasta", "title": "Abrir a pasta dos prompts", "category": "Diz AÃ­", "icon": "$(folder-opened)" },
-      { "command": "dizAi.configurar", "title": "ConfiguraÃ§Ãµes", "category": "Diz AÃ­", "icon": "$(gear)" },
-      { "command": "dizAi.primeirosPassos", "title": "Primeiros passos", "category": "Diz AÃ­" },
-      { "command": "dizAi.configuracoesWindows", "title": "Abrir configuraÃ§Ãµes de voz do Windows", "category": "Diz AÃ­" },
-      { "command": "dizAi.menu", "title": "Menu", "category": "Diz AÃ­" }
+      { "command": "dizAi.ditar", "title": "Ditar", "category": "Diz Aí", "icon": "$(mic)" },
+      { "command": "dizAi.ditarNoChat", "title": "Ditar direto no chat", "category": "Diz Aí", "icon": "$(comment-discussion)" },
+      { "command": "dizAi.lapidar", "title": "Lapidar a fala em prompt", "category": "Diz Aí", "icon": "$(sparkle)" },
+      { "command": "dizAi.ajustar", "title": "Ajustar o prompt por voz", "category": "Diz Aí", "icon": "$(edit)" },
+      { "command": "dizAi.enviar", "title": "Enviar", "category": "Diz Aí", "icon": "$(send)" },
+      { "command": "dizAi.enviarFala", "title": "Enviar a fala sem lapidar", "category": "Diz Aí" },
+      { "command": "dizAi.cancelar", "title": "Cancelar gravação ou lapidação", "category": "Diz Aí" },
+      { "command": "dizAi.trocarModo", "title": "Trocar o modo de escrita", "category": "Diz Aí", "icon": "$(symbol-namespace)" },
+      { "command": "dizAi.trocarMotor", "title": "Trocar o motor de voz", "category": "Diz Aí" },
+      { "command": "dizAi.definirChaveWhisper", "title": "Definir chave do Whisper", "category": "Diz Aí" },
+      { "command": "dizAi.novoBloco", "title": "Bloco novo", "category": "Diz Aí", "icon": "$(new-file)" },
+      { "command": "dizAi.abrirBloco", "title": "Abrir", "category": "Diz Aí" },
+      { "command": "dizAi.reenviar", "title": "Enviar de novo", "category": "Diz Aí", "icon": "$(send)" },
+      { "command": "dizAi.copiar", "title": "Copiar prompt", "category": "Diz Aí", "icon": "$(copy)" },
+      { "command": "dizAi.excluir", "title": "Excluir", "category": "Diz Aí", "icon": "$(trash)" },
+      { "command": "dizAi.atualizarHistorico", "title": "Atualizar", "category": "Diz Aí", "icon": "$(refresh)" },
+      { "command": "dizAi.abrirPasta", "title": "Abrir a pasta dos prompts", "category": "Diz Aí", "icon": "$(folder-opened)" },
+      { "command": "dizAi.configurar", "title": "Configurações", "category": "Diz Aí", "icon": "$(gear)" },
+      { "command": "dizAi.primeirosPassos", "title": "Primeiros passos", "category": "Diz Aí" },
+      { "command": "dizAi.configuracoesWindows", "title": "Abrir configurações de voz do Windows", "category": "Diz Aí" },
+      { "command": "dizAi.menu", "title": "Menu", "category": "Diz Aí" }
     ],
     "menus": {
       "editor/title": [
@@ -136,15 +136,15 @@
       { "command": "dizAi.cancelar", "key": "escape", "when": "dizAi.gravando || dizAi.lapidando" }
     ],
     "configuration": {
-      "title": "Diz AÃ­",
+      "title": "Diz Aí",
       "properties": {
         "dizAi.motor": {
           "type": "string",
           "enum": ["windows", "whisper", "vscode"],
           "enumDescriptions": [
-            "Ditado do Windows (Win+H): online, Ã³timo em portuguÃªs, pontua sozinho e digita no campo em foco",
-            "Whisper (Groq, OpenAI ou servidor local): o mais preciso para termos tÃ©cnicos",
-            "VS Code Speech: offline, sÃ³ dita em editores de texto"
+            "Ditado do Windows (Win+H): online, ótimo em português, pontua sozinho e digita no campo em foco",
+            "Whisper (Groq, OpenAI ou servidor local): o mais preciso para termos técnicos",
+            "VS Code Speech: offline, só dita em editores de texto"
           ],
           "default": "windows",
           "order": 1,
@@ -160,33 +160,33 @@
           "type": "string",
           "enum": ["auto", "claude", "chat", "terminal", "area"],
           "enumDescriptions": [
-            "Claude Code se estiver instalado; senÃ£o o chat do VS Code (Copilot); senÃ£o a Ã¡rea de transferÃªncia",
-            "Caixa de mensagem da extensÃ£o Claude Code",
+            "Claude Code se estiver instalado; senão o chat do VS Code (Copilot); senão a área de transferência",
+            "Caixa de mensagem da extensão Claude Code",
             "Chat do VS Code (GitHub Copilot e outros)",
-            "Terminal (Claude Code CLI, Aider, Codexâ€¦): cola sem apertar Enter",
-            "SÃ³ copia"
+            "Terminal (Claude Code CLI, Aider, Codex…): cola sem apertar Enter",
+            "Só copia"
           ],
           "default": "auto",
           "order": 3,
-          "description": "Para onde o prompt vai quando vocÃª envia."
+          "description": "Para onde o prompt vai quando você envia."
         },
         "dizAi.lapidarAoVivo": {
           "type": "boolean",
           "default": true,
           "order": 4,
-          "description": "Lapidar sozinho a cada pausa na fala. O prompt jÃ¡ estÃ¡ pronto quando vocÃª envia."
+          "description": "Lapidar sozinho a cada pausa na fala. O prompt já está pronto quando você envia."
         },
         "dizAi.pausaAoVivoMs": {
           "type": "number",
           "default": 2000,
           "minimum": 800,
           "order": 5,
-          "description": "SilÃªncio (ms) que conta como pausa para lapidar ao vivo e para ouvir os comandos de voz."
+          "description": "Silêncio (ms) que conta como pausa para lapidar ao vivo e para ouvir os comandos de voz."
         },
         "dizAi.comandosEnviar": {
           "type": "array",
           "items": { "type": "string" },
-          "default": ["pode enviar", "manda ver", "manda bala", "envia aÃ­", "pode mandar", "enviar prompt"],
+          "default": ["pode enviar", "manda ver", "manda bala", "envia aí", "pode mandar", "enviar prompt"],
           "order": 6,
           "description": "Frases que, ditas no FIM da fala, enviam o prompt sem tocar no teclado."
         },
@@ -202,7 +202,7 @@
           "additionalProperties": { "type": "string" },
           "default": {},
           "order": 8,
-          "markdownDescription": "Frase falada â†’ texto fixo. Ex.: `{ \"meu repositÃ³rio\": \"github.com/fulano/projeto\", \"regra de testes\": \"Rode os testes antes de dizer que terminou.\" }`"
+          "markdownDescription": "Frase falada → texto fixo. Ex.: `{ \"meu repositório\": \"github.com/fulano/projeto\", \"regra de testes\": \"Rode os testes antes de dizer que terminou.\" }`"
         },
         "dizAi.modosPersonalizados": {
           "type": "array",
@@ -212,18 +212,18 @@
             "type": "object",
             "required": ["id", "nome", "instrucoes"],
             "properties": {
-              "id": { "type": "string", "description": "Identificador curto, sem espaÃ§o" },
+              "id": { "type": "string", "description": "Identificador curto, sem espaço" },
               "nome": { "type": "string", "description": "Nome que aparece no menu" },
               "detalhe": { "type": "string", "description": "Uma linha explicando o modo" },
               "instrucoes": { "type": "string", "description": "Como organizar o prompt" }
             }
           },
-          "markdownDescription": "Seus modos de escrita. Ex.: `{ \"id\": \"tela\", \"nome\": \"Tela nova\", \"instrucoes\": \"Organize em Tela, Campos, AÃ§Ãµes e Regras visuais.\" }`"
+          "markdownDescription": "Seus modos de escrita. Ex.: `{ \"id\": \"tela\", \"nome\": \"Tela nova\", \"instrucoes\": \"Organize em Tela, Campos, Ações e Regras visuais.\" }`"
         },
         "dizAi.idiomaDoPrompt": {
           "type": "string",
           "enum": ["pt-BR", "en", "mesmo"],
-          "enumDescriptions": ["PortuguÃªs do Brasil", "InglÃªs (vocÃª fala em portuguÃªs, o prompt sai em inglÃªs)", "O mesmo idioma da fala"],
+          "enumDescriptions": ["Português do Brasil", "Inglês (você fala em português, o prompt sai em inglês)", "O mesmo idioma da fala"],
           "default": "pt-BR",
           "order": 10,
           "description": "Idioma do prompt final."
@@ -234,27 +234,27 @@
           "default": ["arquivo", "selecao", "erros", "branch"],
           "uniqueItems": true,
           "order": 11,
-          "description": "O que o lapidador vÃª do editor para entender \"esse arquivo\", \"esse erro\", \"aqui\". SÃ³ entra no prompt quando vocÃª se refere a ele."
+          "description": "O que o lapidador vê do editor para entender \"esse arquivo\", \"esse erro\", \"aqui\". Só entra no prompt quando você se refere a ele."
         },
         "dizAi.instrucoesExtras": {
           "type": "string",
           "default": "",
           "editPresentation": "multilineText",
           "order": 12,
-          "description": "PreferÃªncias que o lapidador sempre segue. Ex.: \"Sempre peÃ§a testes com pytest.\""
+          "description": "Preferências que o lapidador sempre segue. Ex.: \"Sempre peça testes com pytest.\""
         },
         "dizAi.modelo": {
           "type": "string",
           "enum": ["sonnet", "haiku", "opus"],
           "default": "sonnet",
           "order": 13,
-          "description": "Modelo que lapida (usa o login do Claude Code). O Sonnet foi o mais rÃ¡pido e o mais fiel nos testes."
+          "description": "Modelo que lapida (usa o login do Claude Code). O Sonnet foi o mais rápido e o mais fiel nos testes."
         },
         "dizAi.colarAutomatico": {
           "type": "boolean",
           "default": true,
           "order": 14,
-          "description": "Colar sozinho na caixa do Claude Code. Desligado, sÃ³ copia e pÃµe o foco lÃ¡."
+          "description": "Colar sozinho na caixa do Claude Code. Desligado, só copia e põe o foco lá."
         },
         "dizAi.esperaColar": {
           "type": "number",
@@ -267,57 +267,57 @@
           "enum": ["groq", "openai", "local"],
           "default": "groq",
           "order": 20,
-          "description": "Onde o Whisper roda. A chave fica no cofre do VS Code (comando \"Diz AÃ­: definir chave do Whisper\")."
+          "description": "Onde o Whisper roda. A chave fica no cofre do VS Code (comando \"Diz Aí: definir chave do Whisper\")."
         },
         "dizAi.whisper.url": {
           "type": "string",
           "default": "",
           "order": 21,
-          "description": "EndereÃ§o /v1/audio/transcriptions. Vazio = o padrÃ£o do provedor."
+          "description": "Endereço /v1/audio/transcriptions. Vazio = o padrão do provedor."
         },
         "dizAi.whisper.modelo": {
           "type": "string",
           "default": "",
           "order": 22,
-          "description": "Modelo de transcriÃ§Ã£o. Vazio = whisper-large-v3-turbo (Groq), gpt-4o-transcribe (OpenAI)."
+          "description": "Modelo de transcrição. Vazio = whisper-large-v3-turbo (Groq), gpt-4o-transcribe (OpenAI)."
         },
         "dizAi.pasta": {
           "type": "string",
           "default": "",
           "order": 30,
-          "description": "Onde guardar os blocos (fala.md, prompt.md). Vazio = Documentos/Diz AÃ­."
+          "description": "Onde guardar os blocos (fala.md, prompt.md). Vazio = Documentos/Diz Aí."
         },
         "dizAi.claudeCaminho": {
           "type": "string",
           "default": "",
           "order": 31,
-          "description": "Caminho do executÃ¡vel claude. Vazio = o da extensÃ£o Claude Code ou o do PATH."
+          "description": "Caminho do executável claude. Vazio = o da extensão Claude Code ou o do PATH."
         }
       }
     },
     "walkthroughs": [
       {
         "id": "dizAi.primeirosPassos",
-        "title": "Diz AÃ­: primeiros passos",
-        "description": "Em 2 minutos vocÃª estÃ¡ fazendo prompts com a sua voz.",
+        "title": "Diz Aí: primeiros passos",
+        "description": "Em 2 minutos você está fazendo prompts com a sua voz.",
         "steps": [
           {
             "id": "voz",
             "title": "Prepare o ditado do Windows",
-            "description": "Ative a pontuaÃ§Ã£o automÃ¡tica e o reconhecimento de fala online.\n[Abrir DigitaÃ§Ã£o](command:dizAi.configuracoesWindows?%5B%22typing%22%5D)\n[Abrir Privacidade de fala](command:dizAi.configuracoesWindows?%5B%22privacy-speech%22%5D)",
+            "description": "Ative a pontuação automática e o reconhecimento de fala online.\n[Abrir Digitação](command:dizAi.configuracoesWindows?%5B%22typing%22%5D)\n[Abrir Privacidade de fala](command:dizAi.configuracoesWindows?%5B%22privacy-speech%22%5D)",
             "media": { "markdown": "media/passos/1-voz.md" }
           },
           {
             "id": "ditar",
             "title": "Fale a sua ideia",
-            "description": "Aperte Ctrl+Alt+D e fale do seu jeito, com pausa, correÃ§Ã£o e tudo. Aperte de novo para parar.\n[$(mic) Ditar agora](command:dizAi.ditar)",
+            "description": "Aperte Ctrl+Alt+D e fale do seu jeito, com pausa, correção e tudo. Aperte de novo para parar.\n[$(mic) Ditar agora](command:dizAi.ditar)",
             "media": { "markdown": "media/passos/2-ditar.md" },
             "completionEvents": ["onCommand:dizAi.ditar"]
           },
           {
             "id": "lapidar",
             "title": "Veja o prompt nascer",
-            "description": "A cada pausa o Claude reescreve a fala ao lado, jÃ¡ organizada. Quer forÃ§ar? Ctrl+Alt+L.\n[$(sparkle) Lapidar](command:dizAi.lapidar)",
+            "description": "A cada pausa o Claude reescreve a fala ao lado, já organizada. Quer forçar? Ctrl+Alt+L.\n[$(sparkle) Lapidar](command:dizAi.lapidar)",
             "media": { "markdown": "media/passos/3-lapidar.md" },
             "completionEvents": ["onCommand:dizAi.lapidar"]
           },
@@ -331,7 +331,7 @@
           {
             "id": "modo",
             "title": "Escolha o modo e o motor",
-            "description": "Relato de bug, funcionalidade, refatoraÃ§Ã£o, revisÃ£oâ€¦ E, se quiser precisÃ£o mÃ¡xima, o Whisper.\n[Trocar o modo](command:dizAi.trocarModo)\n[Trocar o motor de voz](command:dizAi.trocarMotor)",
+            "description": "Relato de bug, funcionalidade, refatoração, revisão… E, se quiser precisão máxima, o Whisper.\n[Trocar o modo](command:dizAi.trocarModo)\n[Trocar o motor de voz](command:dizAi.trocarMotor)",
             "media": { "markdown": "media/passos/5-modos.md" },
             "completionEvents": ["onCommand:dizAi.trocarModo"]
           }
