@@ -1,6 +1,9 @@
 // Diz Aí: fale a ideia, o Claude escreve o prompt, a extensão entrega no chat.
+// Tudo acontece no painel "Ao vivo": caixa 1 (você fala), caixa 2 (o prompt), Enviar, Limpar.
 const vscode = require('vscode');
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 const { ler, gravar, pastaBase } = require('./config');
 const blocos = require('./blocos');
 const contexto = require('./contexto');
@@ -12,24 +15,26 @@ const { Historico } = require('./historico');
 const { Painel } = require('./painel');
 const ondas = require('./ondas');
 const log = require('./log');
-const fs = require('fs');
-const path = require('path');
 const { listarModos } = require('./prompts');
 const { extrairComandoFinal, aplicarAtalhos, formatarDuracao } = require('./texto');
 
 const esperar = ms => new Promise(r => setTimeout(r, ms));
 const resumo = t => crypto.createHash('sha1').update(String(t).trim()).digest('hex');
+const OUVINDO = ['abrindo', 'ouvindo', 'gravando'];
+// Abas do editor só quando a pessoa pede (ou quando o motor precisa de um editor de texto).
+const comAbas = () => ler('abrirArquivos') === true || motores.motor() === 'vscode';
 
 let ctxExt;
 let barra;
 let relogio = null;
 let historico;
 let painel;
-let painelJaMostrado = false;
+let blocoNoPainel = null;
 let inicioGravacao = 0;
+let abasArrumadas = false;
 const emCurso = new Map();   // dir do bloco -> { cts, promessa }
 const agendados = new Map(); // dir do bloco -> timeout da pausa
-let escrevendo = 0;          // >0 enquanto a própria extensão edita o prompt.md
+let escrevendo = 0;          // >0 enquanto a própria extensão edita fala.md ou prompt.md
 
 // ---------- barra de status ----------
 function nomeModo() {
@@ -52,7 +57,7 @@ function pintarBarra(detalhe = '') {
   barra.backgroundColor = undefined;
   clearInterval(relogio);
   relogio = null;
-  const ouvindo = ['abrindo', 'ouvindo', 'gravando'].includes(e);
+  const ouvindo = OUVINDO.includes(e);
   ondas.definirOuvindo(ouvindo);
   if (ouvindo) {
     if (e === 'gravando') {
@@ -70,19 +75,29 @@ function pintarBarra(detalhe = '') {
   } else if (emCurso.size) {
     barra.text = '$(loading~spin) Lapidando';
     barra.tooltip = 'O Claude está escrevendo o prompt · Esc cancela';
-    painel.estado('lapidando', 'Lapidando o prompt…', nomeModo());
+    painel.estado('lapidando', 'Escrevendo o prompt…', nomeModo());
   } else {
     inicioGravacao = 0;
-    painel.estado('parado', 'Parado', detalhe || nomeModo());
+    painel.estado('parado', 'Pronto para falar', detalhe);
     barra.text = '$(mic) Diz Aí';
     barra.tooltip = new vscode.MarkdownString(
       `**Diz Aí** · modo *${nomeModo()}* · motor *${motores.motor()}*\n\n` +
-      '`Ctrl+Alt+D` ditar · `Ctrl+Alt+L` lapidar · `Ctrl+Alt+Enter` enviar · `Ctrl+Alt+R` ajustar · `Ctrl+Alt+M` ditar direto no chat');
+      '`Ctrl+Alt+D` falar · `Ctrl+Alt+Enter` enviar · `Ctrl+Alt+R` ajustar · `Ctrl+Alt+M` falar direto no chat');
   }
   vscode.commands.executeCommand('setContext', 'dizAi.lapidando', emCurso.size > 0);
 }
 
-// ---------- editores ----------
+// ---------- painel e editores ----------
+const lerArquivo = uri => (fs.existsSync(uri.fsPath) ? fs.readFileSync(uri.fsPath, 'utf8') : '');
+
+function mostrarBloco(b, aviso = '') {
+  blocoNoPainel = b.dir;
+  const meta = blocos.lerMeta(b);
+  const nota = aviso || (meta.enviado ? 'Enviado. Aperte Falar para começar outro prompt, ou Limpar para zerar tudo.'
+    : meta.editadoAMao ? 'Você editou o prompt: ele não muda mais sozinho. Use Refazer para lapidar de novo.' : '');
+  painel.bloco(path.basename(b.dir), lerArquivo(b.fala), lerArquivo(b.prompt), nota);
+}
+
 async function abrirFala(b) {
   const doc = await vscode.workspace.openTextDocument(b.fala);
   const ed = await vscode.window.showTextDocument(doc, { viewColumn: vscode.ViewColumn.Active, preview: false });
@@ -92,26 +107,27 @@ async function abrirFala(b) {
   }
   const fim = doc.lineAt(doc.lineCount - 1).range.end;
   ed.selection = new vscode.Selection(fim, fim);
-  // O prompt.md fica aberto ao lado desde já: é ali que a descrição aparece ao vivo.
-  await mostrarPrompt(b);
-  mostrarBloco(b);
+  await prepararPrompt(b);
   return ed;
 }
 
-function mostrarBloco(b) {
-  painel.bloco(path.basename(b.dir), fs.existsSync(b.fala.fsPath) ? fs.readFileSync(b.fala.fsPath, 'utf8') : '',
-    fs.existsSync(b.prompt.fsPath) ? fs.readFileSync(b.prompt.fsPath, 'utf8') : '');
-}
-
-async function mostrarPrompt(b) {
+// Garante o prompt.md; só abre como aba ao lado no modo com abas.
+async function prepararPrompt(b) {
   if (!fs.existsSync(b.prompt.fsPath)) fs.writeFileSync(b.prompt.fsPath, '', 'utf8');
+  if (!comAbas()) return;
   const visivel = vscode.window.visibleTextEditors.some(e => e.document.uri.fsPath === b.prompt.fsPath);
   if (visivel) return;
   const doc = await vscode.workspace.openTextDocument(b.prompt);
   await vscode.window.showTextDocument(doc, { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true, preview: false });
 }
 
-// Escreve o texto em streaming no prompt.md sem enfileirar edições demais.
+async function abrirArquivos(b) {
+  await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(b.fala), { viewColumn: vscode.ViewColumn.Active, preview: false });
+  if (!fs.existsSync(b.prompt.fsPath)) fs.writeFileSync(b.prompt.fsPath, '', 'utf8');
+  await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(b.prompt), { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true, preview: false });
+}
+
+// Escreve o texto em streaming no prompt.md e no painel sem enfileirar edições demais.
 function escritor(uri) {
   let ultimo = null, ocupado = false;
   const bombear = async () => {
@@ -146,13 +162,13 @@ async function lapidarBloco(b, { silencioso = false } = {}) {
   await blocos.salvarSeAberto(b.fala);
   const fala = textoDaFala(await blocos.lerTexto(b.fala));
   if (!fala.trim()) {
-    if (!silencioso) vscode.window.showInformationMessage('A fala está vazia. Aperte Ctrl+Alt+D e comece a falar.');
+    if (!silencioso) vscode.window.showInformationMessage('A fala está vazia. Aperte Falar (Ctrl+Alt+D) e comece.');
     return null;
   }
 
   const cts = new vscode.CancellationTokenSource();
   const promessa = (async () => {
-    await mostrarPrompt(b);
+    await prepararPrompt(b);
     const saida = escritor(b.prompt);
     const modo = ler('modo');
     const prompt = await lapidador.lapidar(fala, contexto.coletar(), {
@@ -167,6 +183,7 @@ async function lapidarBloco(b, { silencioso = false } = {}) {
 
   emCurso.set(b.dir, { cts, promessa });
   pintarBarra();
+  painel.aviso('');
   try {
     return await promessa;
   } catch (e) {
@@ -188,7 +205,7 @@ async function enviarBloco(b, { crua = false } = {}) {
   if (crua) {
     texto = textoDaFala(await blocos.lerTexto(b.fala));
   } else if (ed && ed.document.uri.fsPath === b.prompt.fsPath && ed.document.getText().trim()) {
-    texto = ed.document.getText(); // vale o que você editou à mão
+    texto = ed.document.getText(); // vale o que você editou à mão na aba
   } else {
     const andamento = emCurso.get(b.dir);
     if (andamento) await andamento.promessa.catch(() => {});
@@ -199,28 +216,30 @@ async function enviarBloco(b, { crua = false } = {}) {
     texto = emDia ? prompt : await lapidarBloco(b);
   }
   if (!texto || !texto.trim()) {
-    if (texto !== null) vscode.window.showInformationMessage('Nada para enviar ainda.');
+    if (texto !== null) vscode.window.showInformationMessage('Nada para enviar ainda. Fale primeiro.');
     return;
   }
   await blocos.salvarSeAberto(b.prompt);
-  await destinos.entregar(texto.trim());
+  let aviso;
+  escrevendo++; // a colagem pode cair e ser desfeita num arquivo do bloco: não é edição sua
+  try { aviso = await destinos.entregar(texto.trim()); } finally { escrevendo--; }
   blocos.gravarMeta(b, { enviado: true, enviadoEm: new Date().toISOString() });
+  painel.aviso(`Enviado. ${aviso} Para outro prompt, aperte Falar; para zerar tudo, Limpar.`);
   historico.atualizar();
 }
 
 // ---------- lapidação ao vivo e comandos de voz ----------
-function aoMudarFala(doc) {
-  const b = blocos.deUri(doc.uri);
-  if (!b) return;
+function agendarFala(b, obterTexto) {
   clearTimeout(agendados.get(b.dir));
   emCurso.get(b.dir)?.cts.cancel(); // a fala mudou: a lapidação em andamento ficou velha
   agendados.set(b.dir, setTimeout(async () => {
     agendados.delete(b.dir);
-    const texto = doc.getText();
+    const texto = obterTexto();
     const { fala, comando } = extrairComandoFinal(texto, ler('comandosEnviar'));
     if (comando) {
       escrevendo++; // a própria extensão tira o comando da fala: não é fala nova
       try { await blocos.trocarTexto(b.fala, fala + '\n'); } finally { escrevendo--; }
+      painel.fala(fala + '\n');
       vscode.window.setStatusBarMessage(`$(megaphone) "${comando}": enviando…`, 4000);
       return enviarBloco(b);
     }
@@ -231,16 +250,41 @@ function aoMudarFala(doc) {
   }, Math.max(800, ler('pausaAoVivoMs') || 2000)));
 }
 
+// A pessoa mudou a caixa 1 do painel (falando ou digitando).
+async function aoFalarNoPainel(texto) {
+  let b = blocos.doDir(blocoNoPainel) || blocos.emUso();
+  if (!b) { b = blocos.criar(); blocoNoPainel = b.dir; }
+  blocos.usar(b);
+  // Mexeu na fala de um prompt já enviado: ele volta a ser rascunho (o Falar continua nele).
+  if (blocos.lerMeta(b).enviado) blocos.gravarMeta(b, { enviado: false });
+  escrevendo++;
+  try { await blocos.trocarTexto(b.fala, texto); } finally { escrevendo--; }
+  agendarFala(b, () => painel.ultimo.fala);
+}
+
+// A pessoa editou a caixa 2 do painel.
+async function aoEditarPromptNoPainel(texto) {
+  const b = blocos.doDir(blocoNoPainel) || blocos.emUso();
+  if (!b || emCurso.has(b.dir)) return;
+  escrevendo++;
+  try { await blocos.trocarTexto(b.prompt, texto); } finally { escrevendo--; }
+  blocos.gravarMeta(b, { editadoAMao: true });
+  painel.aviso('Você editou o prompt: ele não muda mais sozinho. Use Refazer para lapidar de novo.');
+}
+
 function aoMudarDocumento(e) {
   if (!e.contentChanges.length) return;
   const uri = e.document.uri;
   if (blocos.dentro(uri)) ondas.desenharEditor(); // some a dica do arquivo vazio
+  if (escrevendo) return;
   if (blocos.ehFala(uri)) {
-    painel.fala(e.document.getText());
-    if (!escrevendo) aoMudarFala(e.document);
-  }
-  else if (blocos.ehPrompt(uri) && !escrevendo && !emCurso.has(blocos.deUri(uri).dir)) {
-    blocos.gravarMeta(blocos.deUri(uri), { editadoAMao: true });
+    const b = blocos.deUri(uri);
+    if (b.dir === blocoNoPainel) painel.fala(e.document.getText());
+    agendarFala(b, () => e.document.getText());
+  } else if (blocos.ehPrompt(uri) && !emCurso.has(blocos.deUri(uri).dir)) {
+    const b = blocos.deUri(uri);
+    blocos.gravarMeta(b, { editadoAMao: true });
+    if (b.dir === blocoNoPainel) painel.prompt(e.document.getText());
   }
 }
 
@@ -255,8 +299,10 @@ async function aoTranscrever({ texto, alvo }) {
     return destinos.entregar(comando ? fala : texto);
   }
   const b = blocos.emUso() || blocos.criar();
+  // No painel, o texto entra onde estiver o cursor da caixa 1.
+  if (!comAbas() && painel.visivel && blocoNoPainel === b.dir) return painel.inserirFala(texto);
   const doc = await vscode.workspace.openTextDocument(b.fala);
-  const ed = vscode.window.visibleTextEditors.find(e => e.document === doc);
+  const ed = vscode.window.visibleTextEditors.find(x => x.document === doc);
   const pos = ed ? ed.selection.active : doc.lineAt(doc.lineCount - 1).range.end;
   const antes = doc.getText(new vscode.Range(new vscode.Position(0, 0), pos));
   const sep = antes && !/\s$/.test(antes) ? ' ' : '';
@@ -269,18 +315,40 @@ async function aoTranscrever({ texto, alvo }) {
 // ---------- comandos ----------
 async function ditar() {
   // Já está ouvindo: o mesmo atalho para.
-  if (['abrindo', 'ouvindo', 'gravando', 'transcrevendo'].includes(motores.estado())) return motores.alternar();
+  if ([...OUVINDO, 'transcrevendo'].includes(motores.estado())) return motores.alternar();
+
+  // Abas de fala/prompt de versões antigas ou de blocos velhos só confundem: fecha uma vez por sessão.
+  if (!comAbas() && !abasArrumadas) { abasArrumadas = true; await blocos.fecharAbas(); }
+
   const ed = vscode.window.activeTextEditor;
   const b = ed && blocos.ehFala(ed.document.uri) ? blocos.deUri(ed.document.uri) : blocos.paraDitar();
   blocos.usar(b);
+  if (b.dir !== blocoNoPainel) mostrarBloco(b);
 
-  // Na primeira vez da sessão, mostra o painel Ao vivo (ondas, fala e prompt) sem tirar o cursor do bloco.
-  if (!painelJaMostrado && ler('mostrarPainel')) {
-    painelJaMostrado = true;
-    await vscode.commands.executeCommand('dizAi.aoVivo.focus').then(undefined, () => {});
-  }
-  await abrirFala(b); // devolve o foco ao fala.md: é ali que o Win+H digita
+  if (comAbas()) await abrirFala(b);                       // o VS Code Speech só dita em editor
+  else if (motores.motor() === 'windows') await painel.focarFala(); // o Win+H digita na caixa 1
+  else await vscode.commands.executeCommand('dizAi.aoVivo.focus');
   await motores.alternar('fala');
+}
+
+/** Limpar: fala e prompt novos e, se quiser, conversa nova no Claude Code. */
+async function limpar({ conversa = true } = {}) {
+  if (OUVINDO.includes(motores.estado())) await motores.cancelar();
+  for (const { cts } of emCurso.values()) cts.cancel();
+  for (const t of agendados.values()) clearTimeout(t);
+  agendados.clear();
+  await blocos.fecharAbas();
+
+  const atual = blocos.emUso();
+  const vazio = atual && !lerArquivo(atual.fala).trim() && !lerArquivo(atual.prompt).trim();
+  const b = vazio ? atual : blocos.criar(); // o anterior fica no Histórico
+  blocos.usar(b);
+
+  let onde = null;
+  if (conversa && ler('limparAbreConversaNova')) onde = await destinos.novaConversa();
+  mostrarBloco(b, onde ? `Tudo limpo: prompt novo e conversa nova no ${onde}. Aperte Falar.` : 'Prompt novo. Aperte Falar.');
+  historico.atualizar();
+  await painel.focarFala();
 }
 
 async function diagnosticar() {
@@ -302,14 +370,14 @@ async function diagnosticar() {
   if (acao === 'Liberar tudo') {
     if (r.mic?.mudo || (r.mic && r.mic.volume < 20)) log.info(`microfone: ${await motores.liberarMicrofone()}`);
     if (r.linhas.some(l => l.includes('DESLIGADO'))) { await motores.ligarFalaOnline(); log.info('fala online ligada'); }
-    vscode.window.showInformationMessage('Liberado. Aperte Ctrl+Alt+D e fale.');
+    vscode.window.showInformationMessage('Microfone liberado. Aperte Falar (Ctrl+Alt+D).');
   } else if (acao) {
     vscode.env.openExternal(vscode.Uri.parse('ms-settings:sound'));
   }
 }
 
 async function ditarNoChat() {
-  if (['abrindo', 'ouvindo', 'gravando'].includes(motores.estado())) return motores.alternar();
+  if (OUVINDO.includes(motores.estado())) return motores.alternar();
   // O Win+H digita onde estiver o foco: leva o foco para o chat antes.
   if (motores.motor() === 'windows' && await destinos.focar()) await esperar(300);
   await motores.alternar('campo');
@@ -319,23 +387,26 @@ async function ajustar() {
   const b = blocos.emUso();
   const prompt = b && (await blocos.lerTexto(b.prompt)).trim();
   if (!prompt) {
-    vscode.window.showInformationMessage('Ainda não há prompt para ajustar. Dite e lapide primeiro (Ctrl+Alt+D, Ctrl+Alt+L).');
+    vscode.window.showInformationMessage('Ainda não há prompt para ajustar. Fale primeiro (Ctrl+Alt+D).');
     return;
   }
   const aplicar = async ajuste => {
     if (!ajuste || !ajuste.trim()) return;
     const cts = new vscode.CancellationTokenSource();
     const promessa = (async () => {
-      await mostrarPrompt(b);
+      await prepararPrompt(b);
       const saida = escritor(b.prompt);
       const novo = await lapidador.ajustar(prompt, ajuste, { cancelar: cts.token, aoEscrever: t => saida.escrever(t) });
       await saida.terminar(novo + '\n');
-      blocos.gravarMeta(b, { editadoAMao: true }); // o prompt agora vale mais que a fala
+      blocos.gravarMeta(b, { editadoAMao: true }); // o prompt ajustado vale mais que a fala
       return novo;
     })();
     emCurso.set(b.dir, { cts, promessa });
     pintarBarra();
-    try { await promessa; } catch (e) {
+    try {
+      await promessa;
+      painel.aviso(`Ajuste aplicado: "${ajuste.trim()}".`);
+    } catch (e) {
       if (e.message !== 'cancelado') vscode.window.showErrorMessage(`Diz Aí: não consegui ajustar. ${e.message}`);
     } finally { emCurso.delete(b.dir); cts.dispose(); pintarBarra(); historico.atualizar(); }
   };
@@ -367,6 +438,7 @@ async function trocarModo() {
     { title: 'Modo de escrita do prompt', placeHolder: 'Como a sua fala deve virar prompt' });
   if (!r) return;
   await gravar('modo', r.id);
+  painel.modo(nomeModo());
   pintarBarra();
   const b = blocos.emUso();
   if (b && (await blocos.lerTexto(b.prompt)).trim() && !blocos.lerMeta(b).enviado) lapidarBloco(b);
@@ -374,9 +446,9 @@ async function trocarModo() {
 
 async function trocarMotor() {
   const r = await vscode.window.showQuickPick([
-    { id: 'windows', label: '$(window) Ditado do Windows (Win+H)', detail: 'Online, ótimo em português, pontua sozinho. Digita no campo em foco.' },
+    { id: 'windows', label: '$(window) Ditado do Windows (Win+H)', detail: 'Online, ótimo em português, pontua sozinho. Digita na caixa do painel.' },
     { id: 'whisper', label: '$(radio-tower) Whisper', detail: 'O mais preciso para termos técnicos. Groq (grátis com limite), OpenAI ou servidor local.' },
-    { id: 'vscode', label: '$(vm) VS Code Speech', detail: 'Offline, roda na sua máquina. Só dita em editores de texto.' },
+    { id: 'vscode', label: '$(vm) VS Code Speech', detail: 'Offline, roda na sua máquina. Dita num arquivo aberto em aba.' },
   ], { title: 'Quem transforma a sua voz em texto' });
   if (!r) return;
   await gravar('motor', r.id);
@@ -409,16 +481,16 @@ async function definirChaveWhisper() {
 }
 
 async function cancelar() {
-  if (['abrindo', 'ouvindo', 'gravando'].includes(motores.estado())) return motores.cancelar();
+  if (OUVINDO.includes(motores.estado())) return motores.cancelar();
   for (const { cts } of emCurso.values()) cts.cancel();
 }
 
+// Clique no Histórico: o bloco volta para o painel (ou para as abas, no modo com abas).
 async function abrirBloco(b) {
   blocos.usar(b);
-  const temPrompt = (await blocos.lerTexto(b.prompt)).trim();
-  await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(b.fala), { viewColumn: vscode.ViewColumn.Active, preview: false });
-  if (temPrompt) await mostrarPrompt(b);
   mostrarBloco(b);
+  if (comAbas()) await abrirArquivos(b);
+  else await vscode.commands.executeCommand('dizAi.aoVivo.focus');
 }
 
 async function excluirBloco(b) {
@@ -430,17 +502,15 @@ async function excluirBloco(b) {
 
 async function menu() {
   const itens = [
-    { label: '$(mic) Ditar', description: 'Ctrl+Alt+D', cmd: 'dizAi.ditar' },
-    { label: '$(comment-discussion) Ditar direto no chat', description: 'Ctrl+Alt+M', cmd: 'dizAi.ditarNoChat' },
-    { label: '$(sparkle) Lapidar a fala', description: 'Ctrl+Alt+L', cmd: 'dizAi.lapidar' },
-    { label: '$(edit) Ajustar o prompt por voz', description: 'Ctrl+Alt+R', cmd: 'dizAi.ajustar' },
+    { label: '$(mic) Falar', description: 'Ctrl+Alt+D', cmd: 'dizAi.ditar' },
     { label: '$(send) Enviar', description: 'Ctrl+Alt+Enter', cmd: 'dizAi.enviar' },
-    { label: '$(quote) Enviar a fala sem lapidar', cmd: 'dizAi.enviarFala' },
+    { label: '$(clear-all) Limpar', detail: 'Prompt novo e conversa nova no Claude Code', cmd: 'dizAi.limpar' },
+    { label: '$(edit) Ajustar o prompt por voz', description: 'Ctrl+Alt+R', cmd: 'dizAi.ajustar' },
+    { label: '$(comment-discussion) Falar direto no chat, sem lapidar', description: 'Ctrl+Alt+M', cmd: 'dizAi.ditarNoChat' },
     { kind: vscode.QuickPickItemKind.Separator, label: 'Ajustes' },
     { label: `$(symbol-namespace) Modo: ${nomeModo()}`, cmd: 'dizAi.trocarModo' },
     { label: `$(settings-gear) Motor de voz: ${motores.motor()}`, cmd: 'dizAi.trocarMotor' },
-    { label: '$(new-file) Bloco novo', cmd: 'dizAi.novoBloco' },
-    { label: '$(pulse) Painel ao vivo', cmd: 'dizAi.aoVivo.focus' },
+    { label: '$(pulse) Painel Ao vivo', cmd: 'dizAi.aoVivo.focus' },
     { label: '$(history) Histórico', cmd: 'dizAi.historico.focus' },
     { label: '$(debug) Testar o microfone', cmd: 'dizAi.diagnosticar' },
     { label: '$(folder-opened) Pasta dos prompts', cmd: 'dizAi.abrirPasta' },
@@ -460,7 +530,7 @@ function atualizarContexto() {
   ondas.desenharEditor();
   if (noBloco && painel) {
     const b = blocos.deUri(uri);
-    if (b.dir !== atualizarContexto.ultimo) { atualizarContexto.ultimo = b.dir; mostrarBloco(b); }
+    if (b.dir !== blocoNoPainel) { blocos.usar(b); mostrarBloco(b); }
   }
 }
 
@@ -468,7 +538,7 @@ function atualizarContexto() {
 function aoNivel({ nivel }) {
   ondas.nivel(nivel);
   painel.nivel(nivel);
-  if (['abrindo', 'ouvindo', 'gravando'].includes(motores.estado())) barra.text = textoOuvindo();
+  if (OUVINDO.includes(motores.estado())) barra.text = textoOuvindo();
 }
 
 // ---------- ativação ----------
@@ -478,6 +548,9 @@ function activate(context) {
   motores.iniciar(context);
   historico = new Historico();
   painel = new Painel();
+  painel.aoFalar = aoFalarNoPainel;
+  painel.aoEditarPrompt = aoEditarPromptNoPainel;
+  painel.ultimo.modo = nomeModo();
   context.subscriptions.push(vscode.window.registerWebviewViewProvider('dizAi.aoVivo', painel, { webviewOptions: { retainContextWhenHidden: true } }));
 
   barra = vscode.window.createStatusBarItem('dizAi.status', vscode.StatusBarAlignment.Right, 100);
@@ -487,13 +560,17 @@ function activate(context) {
   pintarBarra();
   atualizarContexto();
 
+  // Ao abrir o VS Code, o painel mostra o prompt em andamento (se não foi enviado).
+  const atual = blocos.emUso();
+  if (atual && !blocos.lerMeta(atual).enviado) mostrarBloco(atual);
+
   const view = vscode.window.createTreeView('dizAi.historico', { treeDataProvider: historico });
   historico.anexar(view);
 
   const cmd = (id, fn) => vscode.commands.registerCommand(id, fn);
   const comBloco = fn => async item => {
     const b = item?.dir ? item : blocos.emUso();
-    if (!b) return vscode.window.showInformationMessage('Nenhum bloco ainda. Aperte Ctrl+Alt+D para ditar.');
+    if (!b) return vscode.window.showInformationMessage('Nada ainda. Aperte Falar (Ctrl+Alt+D).');
     return fn(b);
   };
 
@@ -501,6 +578,8 @@ function activate(context) {
     barra, view,
     cmd('dizAi.ditar', ditar),
     cmd('dizAi.ditarNoChat', ditarNoChat),
+    cmd('dizAi.limpar', () => limpar()),
+    cmd('dizAi.novoBloco', () => limpar({ conversa: false })),
     cmd('dizAi.lapidar', comBloco(b => lapidarBloco(b))),
     cmd('dizAi.enviar', comBloco(b => enviarBloco(b))),
     cmd('dizAi.enviarFala', comBloco(b => enviarBloco(b, { crua: true }))),
@@ -509,15 +588,16 @@ function activate(context) {
     cmd('dizAi.trocarModo', trocarModo),
     cmd('dizAi.trocarMotor', trocarMotor),
     cmd('dizAi.definirChaveWhisper', definirChaveWhisper),
-    cmd('dizAi.novoBloco', async () => { await abrirFala(blocos.criar()); historico.atualizar(); }),
     cmd('dizAi.abrirBloco', abrirBloco),
+    cmd('dizAi.abrirArquivos', comBloco(abrirArquivos)),
     cmd('dizAi.reenviar', comBloco(async b => {
       const t = (await blocos.lerTexto(b.prompt)).trim() || textoDaFala(await blocos.lerTexto(b.fala));
       if (t) { await destinos.entregar(t); blocos.gravarMeta(b, { enviado: true }); historico.atualizar(); }
     })),
     cmd('dizAi.copiar', comBloco(async b => {
       await vscode.env.clipboard.writeText(((await blocos.lerTexto(b.prompt)) || (await blocos.lerTexto(b.fala))).trim());
-      vscode.window.setStatusBarMessage('$(clippy) Copiado', 3000);
+      vscode.window.setStatusBarMessage('$(clippy) Prompt copiado', 3000);
+      if (b.dir === blocoNoPainel) painel.aviso('Prompt copiado. Cole onde quiser com Ctrl+V.');
     })),
     cmd('dizAi.excluir', comBloco(excluirBloco)),
     cmd('dizAi.atualizarHistorico', () => historico.atualizar()),
@@ -538,7 +618,12 @@ function activate(context) {
     vscode.window.onDidChangeActiveTextEditor(atualizarContexto),
     vscode.window.onDidChangeTextEditorSelection(e => contexto.lembrar(e.textEditor)),
     vscode.workspace.onDidChangeTextDocument(aoMudarDocumento),
-    vscode.workspace.onDidChangeConfiguration(e => { if (e.affectsConfiguration('dizAi')) { pintarBarra(); historico.atualizar(); } }),
+    vscode.workspace.onDidChangeConfiguration(e => {
+      if (!e.affectsConfiguration('dizAi')) return;
+      painel.modo(nomeModo());
+      pintarBarra();
+      historico.atualizar();
+    }),
     { dispose: () => { clearInterval(relogio); motores.encerrar(); ondas.descartar(); } },
   );
 

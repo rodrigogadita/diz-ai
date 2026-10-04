@@ -1,6 +1,6 @@
 # Fale do seu jeito
 
-`Ctrl+Alt+D` abre um bloco de fala e liga o microfone.
+`Ctrl+Alt+D` (ou o botão **Falar**) abre o painel **Ao vivo**, na barra lateral, e liga o microfone. O que você fala entra na **caixa 1**.
 
 Não precisa falar bonito:
 

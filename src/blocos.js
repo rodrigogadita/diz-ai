@@ -103,6 +103,18 @@ async function trocarTexto(uri, texto, { salvar = true } = {}) {
   if (salvar) await doc.save();
 }
 
+/** Fecha as abas de fala.md e prompt.md abertas no editor (salva antes). */
+async function fecharAbas() {
+  const abas = vscode.window.tabGroups.all.flatMap(g => g.tabs)
+    .filter(t => t.input instanceof vscode.TabInputText && dentro(t.input.uri));
+  for (const t of abas) {
+    const doc = documentoAberto(t.input.uri);
+    if (doc?.isDirty) await doc.save();
+  }
+  if (abas.length) await vscode.window.tabGroups.close(abas, true);
+  return abas.length;
+}
+
 function listar(limite = 200) {
   const base = pastaBase();
   if (!fs.existsSync(base)) return [];
@@ -118,11 +130,12 @@ function listar(limite = 200) {
       const ler = f => { try { return fs.readFileSync(f, 'utf8'); } catch { return ''; } };
       const prompt = ler(b.prompt.fsPath);
       const fala = ler(b.fala.fsPath);
-      return { ...b, nome, meta, prompt, fala, titulo: titulo(prompt || fala) || '(vazio)' };
-    });
+      return { ...b, nome, meta, prompt, fala, titulo: titulo(prompt || fala) };
+    })
+    .filter(b => b.titulo); // bloco vazio (Limpar sem falar nada) não polui o histórico
 }
 
 module.exports = {
-  iniciar, criar, emUso, paraDitar, usar, deUri, dentro, ehFala, ehPrompt,
-  lerMeta, gravarMeta, lerTexto, salvarSeAberto, trocarTexto, documentoAberto, listar,
+  iniciar, criar, emUso, doDir: dir => (dir && fs.existsSync(dir) ? montar(dir) : null), paraDitar, usar, deUri, dentro, ehFala, ehPrompt,
+  lerMeta, gravarMeta, lerTexto, salvarSeAberto, trocarTexto, documentoAberto, listar, fecharAbas,
 };

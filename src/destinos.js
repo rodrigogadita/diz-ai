@@ -84,6 +84,21 @@ async function entregar(texto) {
     aviso = 'Prompt copiado. Cole onde quiser com Ctrl+V.';
   }
   vscode.window.setStatusBarMessage(`$(check) ${aviso}`, 8000);
+  return aviso;
 }
 
-module.exports = { entregar, focar, temComando };
+/** Começa uma conversa nova no destino. Devolve o nome do lugar, ou null se não houver como. */
+async function novaConversa() {
+  const destino = await resolverDestino();
+  if (destino === 'claude' && await temComando('claude-vscode.newConversation')) {
+    await vscode.commands.executeCommand('claude-vscode.newConversation');
+    return 'Claude Code';
+  }
+  if (destino === 'chat' && await temComando('workbench.action.chat.newChat')) {
+    await vscode.commands.executeCommand('workbench.action.chat.newChat');
+    return 'chat';
+  }
+  return null;
+}
+
+module.exports = { entregar, focar, novaConversa, temComando };

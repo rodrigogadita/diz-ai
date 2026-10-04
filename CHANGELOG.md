@@ -1,5 +1,17 @@
 # Novidades
 
+## 1.2.0
+
+- **Tudo num lugar só**: o painel **Ao vivo** virou o centro. Caixa 1 é o que você fala (o ditado do Windows digita direto nela), caixa 2 é o prompt nascendo. Nenhuma aba é aberta; os arquivos são salvos em segundo plano para o Histórico.
+- **Limpar**: zera as duas caixas, fecha abas antigas do Diz Aí e abre uma conversa nova no Claude Code (desligue em `dizAi.limparAbreConversaNova`).
+- No primeiro Falar da sessão, as abas de fala.md e prompt.md que tinham ficado abertas são fechadas.
+- Botão **Refazer** no painel e **Ctrl+Enter** dentro das caixas para enviar.
+- Clicar no Histórico traz o prompt de volta ao painel; "Abrir em abas" fica no menu de contexto.
+- O ditado do Windows não é desligado sem querer: se ele já estiver ouvindo, o Falar só acompanha. A folga para considerar que ele parou subiu para 3 s.
+- A colagem no envio não marca mais o prompt como "editado à mão" (isso congelava a lapidação ao vivo).
+- Blocos vazios não aparecem no Histórico.
+- Configuração nova `dizAi.abrirArquivos` para quem prefere as abas; `dizAi.mostrarPainel` saiu.
+
 ## 1.1.0
 
 - **Ondas da voz ao vivo**: na barra de status, ao lado do cursor no `fala.md` e grandes no painel novo **Ao vivo**.

@@ -2,7 +2,7 @@
   "name": "diz-ai",
   "displayName": "Diz Aí: prompts com a sua voz",
   "description": "Fale a ideia do seu jeito. O Diz Aí transcreve, o Claude lapida num prompt claro e ele chega pronto no Claude Code, no Copilot ou no terminal. Feito para o português do Brasil.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "publisher": "rodrigogadita",
   "author": {
     "name": "Rodrigo Silva",
@@ -79,12 +79,13 @@
     "viewsWelcome": [
       {
         "view": "dizAi.historico",
-        "contents": "Fale a ideia do seu jeito. O Diz Aí escreve o prompt e entrega no chat.\n[$(mic) Ditar agora](command:dizAi.ditar)\nAtalho: Ctrl+Alt+D para falar, Ctrl+Alt+Enter para enviar.\n[Primeiros passos](command:dizAi.primeirosPassos)"
+        "contents": "Fale a ideia do seu jeito. O Diz Aí escreve o prompt e entrega no chat.\n[$(mic) Falar agora](command:dizAi.ditar)\nAtalho: Ctrl+Alt+D para falar, Ctrl+Alt+Enter para enviar.\n[Primeiros passos](command:dizAi.primeirosPassos)"
       }
     ],
     "commands": [
-      { "command": "dizAi.ditar", "title": "Ditar", "category": "Diz Aí", "icon": "$(mic)" },
-      { "command": "dizAi.ditarNoChat", "title": "Ditar direto no chat", "category": "Diz Aí", "icon": "$(comment-discussion)" },
+      { "command": "dizAi.ditar", "title": "Falar", "category": "Diz Aí", "icon": "$(mic)" },
+      { "command": "dizAi.limpar", "title": "Limpar (prompt e conversa novos)", "category": "Diz Aí", "icon": "$(clear-all)" },
+      { "command": "dizAi.ditarNoChat", "title": "Falar direto no chat, sem lapidar", "category": "Diz Aí", "icon": "$(comment-discussion)" },
       { "command": "dizAi.lapidar", "title": "Lapidar a fala em prompt", "category": "Diz Aí", "icon": "$(sparkle)" },
       { "command": "dizAi.ajustar", "title": "Ajustar o prompt por voz", "category": "Diz Aí", "icon": "$(edit)" },
       { "command": "dizAi.enviar", "title": "Enviar", "category": "Diz Aí", "icon": "$(send)" },
@@ -93,7 +94,8 @@
       { "command": "dizAi.trocarModo", "title": "Trocar o modo de escrita", "category": "Diz Aí", "icon": "$(symbol-namespace)" },
       { "command": "dizAi.trocarMotor", "title": "Trocar o motor de voz", "category": "Diz Aí" },
       { "command": "dizAi.definirChaveWhisper", "title": "Definir chave do Whisper", "category": "Diz Aí" },
-      { "command": "dizAi.novoBloco", "title": "Bloco novo", "category": "Diz Aí", "icon": "$(new-file)" },
+      { "command": "dizAi.novoBloco", "title": "Prompt novo (mantém a conversa)", "category": "Diz Aí", "icon": "$(new-file)" },
+      { "command": "dizAi.abrirArquivos", "title": "Abrir fala.md e prompt.md em abas", "category": "Diz Aí", "icon": "$(go-to-file)" },
       { "command": "dizAi.abrirBloco", "title": "Abrir", "category": "Diz Aí" },
       { "command": "dizAi.reenviar", "title": "Enviar de novo", "category": "Diz Aí", "icon": "$(send)" },
       { "command": "dizAi.copiar", "title": "Copiar prompt", "category": "Diz Aí", "icon": "$(copy)" },
@@ -116,10 +118,11 @@
         { "command": "dizAi.trocarModo", "when": "dizAi.noBloco", "group": "navigation@5" }
       ],
       "view/title": [
-        { "command": "dizAi.diagnosticar", "when": "view == dizAi.aoVivo", "group": "navigation@1" },
-        { "command": "dizAi.configurar", "when": "view == dizAi.aoVivo", "group": "navigation@2" },
+        { "command": "dizAi.limpar", "when": "view == dizAi.aoVivo", "group": "navigation@1" },
+        { "command": "dizAi.diagnosticar", "when": "view == dizAi.aoVivo", "group": "navigation@2" },
+        { "command": "dizAi.configurar", "when": "view == dizAi.aoVivo", "group": "navigation@3" },
         { "command": "dizAi.ditar", "when": "view == dizAi.historico", "group": "navigation@1" },
-        { "command": "dizAi.novoBloco", "when": "view == dizAi.historico", "group": "navigation@2" },
+        { "command": "dizAi.limpar", "when": "view == dizAi.historico", "group": "navigation@2" },
         { "command": "dizAi.atualizarHistorico", "when": "view == dizAi.historico", "group": "navigation@3" },
         { "command": "dizAi.abrirPasta", "when": "view == dizAi.historico", "group": "navigation@4" },
         { "command": "dizAi.configurar", "when": "view == dizAi.historico", "group": "navigation@5" }
@@ -127,6 +130,7 @@
       "view/item/context": [
         { "command": "dizAi.reenviar", "when": "view == dizAi.historico && viewItem == dizAi.bloco", "group": "inline@1" },
         { "command": "dizAi.copiar", "when": "view == dizAi.historico && viewItem == dizAi.bloco", "group": "inline@2" },
+        { "command": "dizAi.abrirArquivos", "when": "view == dizAi.historico && viewItem == dizAi.bloco", "group": "a@1" },
         { "command": "dizAi.excluir", "when": "view == dizAi.historico && viewItem == dizAi.bloco", "group": "z@1" }
       ],
       "commandPalette": [
@@ -134,7 +138,8 @@
         { "command": "dizAi.reenviar", "when": "false" },
         { "command": "dizAi.copiar", "when": "false" },
         { "command": "dizAi.excluir", "when": "false" },
-        { "command": "dizAi.atualizarHistorico", "when": "false" }
+        { "command": "dizAi.atualizarHistorico", "when": "false" },
+        { "command": "dizAi.abrirArquivos", "when": "false" }
       ]
     },
     "keybindings": [
@@ -142,7 +147,7 @@
       { "command": "dizAi.ditarNoChat", "key": "ctrl+alt+m", "mac": "cmd+alt+m" },
       { "command": "dizAi.lapidar", "key": "ctrl+alt+l", "mac": "cmd+alt+l" },
       { "command": "dizAi.ajustar", "key": "ctrl+alt+r", "mac": "cmd+alt+r" },
-      { "command": "dizAi.enviar", "key": "ctrl+alt+enter", "mac": "cmd+alt+enter", "when": "dizAi.noBloco && !findWidgetVisible" },
+      { "command": "dizAi.enviar", "key": "ctrl+alt+enter", "mac": "cmd+alt+enter", "when": "(dizAi.noBloco && !findWidgetVisible) || focusedView == 'dizAi.aoVivo'" },
       { "command": "dizAi.cancelar", "key": "escape", "when": "dizAi.ouvindo || dizAi.lapidando" }
     ],
     "configuration": {
@@ -152,9 +157,9 @@
           "type": "string",
           "enum": ["windows", "whisper", "vscode"],
           "enumDescriptions": [
-            "Ditado do Windows (Win+H): online, ótimo em português, pontua sozinho e digita no campo em foco",
+            "Ditado do Windows (Win+H): online, ótimo em português, pontua sozinho e digita na caixa do painel Ao vivo",
             "Whisper (Groq, OpenAI ou servidor local): o mais preciso para termos técnicos",
-            "VS Code Speech: offline, só dita em editores de texto"
+            "VS Code Speech: offline, dita num arquivo aberto em aba"
           ],
           "default": "windows",
           "order": 1,
@@ -180,11 +185,17 @@
           "order": 3,
           "description": "Para onde o prompt vai quando você envia."
         },
-        "dizAi.mostrarPainel": {
+        "dizAi.abrirArquivos": {
+          "type": "boolean",
+          "default": false,
+          "order": 3.5,
+          "description": "Também abrir fala.md e prompt.md como abas do editor. Desligado (padrão), tudo acontece no painel Ao vivo e os arquivos são salvos em segundo plano."
+        },
+        "dizAi.limparAbreConversaNova": {
           "type": "boolean",
           "default": true,
-          "order": 3.5,
-          "description": "No primeiro ditado da sessão, abrir o painel Ao vivo (ondas da voz, o que você disse e o prompt nascendo)."
+          "order": 3.6,
+          "description": "O botão Limpar também começa uma conversa nova no Claude Code (ou no chat do VS Code)."
         },
         "dizAi.lapidarAoVivo": {
           "type": "boolean",
@@ -326,14 +337,14 @@
           {
             "id": "ditar",
             "title": "Fale a sua ideia",
-            "description": "Aperte Ctrl+Alt+D e fale do seu jeito, com pausa, correção e tudo. Aperte de novo para parar.\n[$(mic) Ditar agora](command:dizAi.ditar)",
+            "description": "Aperte Ctrl+Alt+D e fale do seu jeito, com pausa, correção e tudo. Aperte de novo para parar. O texto entra na caixa 1 do painel Ao vivo.\n[$(mic) Falar agora](command:dizAi.ditar)",
             "media": { "markdown": "media/passos/2-ditar.md" },
             "completionEvents": ["onCommand:dizAi.ditar"]
           },
           {
             "id": "lapidar",
             "title": "Veja o prompt nascer",
-            "description": "A cada pausa o Claude reescreve a fala ao lado, já organizada. Quer forçar? Ctrl+Alt+L.\n[$(sparkle) Lapidar](command:dizAi.lapidar)",
+            "description": "A cada pausa o Claude reescreve a fala na caixa 2 do painel, já organizada. Quer refazer? Botão Refazer.\n[$(sparkle) Lapidar](command:dizAi.lapidar)",
             "media": { "markdown": "media/passos/3-lapidar.md" },
             "completionEvents": ["onCommand:dizAi.lapidar"]
           },

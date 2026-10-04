@@ -63,7 +63,7 @@ Antes de começar, pergunte se a data deve filtrar um dia exato ou um período a
 1. Baixe o `.vsix` da [última versão](https://github.com/rodrigogadita/diz-ai/releases/latest).
 2. Instale:
    ```
-   code --install-extension diz-ai-1.1.0.vsix
+   code --install-extension diz-ai-1.2.0.vsix
    ```
    Ou, no VS Code, abra **Extensões > ⋯ > Instalar do VSIX**.
 3. Tenha a extensão [Claude Code](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code) instalada e logada. O Diz Aí usa o mesmo login para lapidar. **Não precisa de chave de API.**
@@ -74,8 +74,8 @@ Na primeira abertura, o passo a passo **Primeiros passos** aparece sozinho.
 
 | Atalho | O que faz |
 |---|---|
-| `Ctrl+Alt+D` | Abre um bloco de fala e liga o microfone. De novo para parar. |
-| *(pausa)* | O prompt é lapidado **ao vivo**, ao lado, em streaming. |
+| `Ctrl+Alt+D` | Abre o painel **Ao vivo** e liga o microfone. De novo para parar. |
+| *(pausa)* | O prompt é escrito **ao vivo** na caixa 2, em streaming. |
 | `Ctrl+Alt+Enter` | Envia. Ou só termine a fala com **"pode enviar"**. |
 | `Ctrl+Alt+R` | Ajusta o prompt por voz: *"deixa mais curto"*, *"acrescenta que é FastAPI"*. |
 | `Ctrl+Alt+L` | Força uma lapidação. |
@@ -88,11 +88,14 @@ O ícone **Diz Aí** na barra de status abre o menu com tudo.
 
 | O quê | Onde |
 |---|---|
-| **Ondas da sua voz** | Na barra de status (`▂▄▆█▆▄ Ouvindo`), ao lado do cursor no `fala.md` e grandes no painel **Ao vivo** |
-| **O que você disse** | No `fala.md` (à esquerda) e no painel **Ao vivo** |
-| **O prompt nascendo** | No `prompt.md` (à direita, abre sozinho) e no painel **Ao vivo**, em streaming |
+| **Ondas da sua voz** | No painel **Ao vivo** e na barra de status (`▂▄▆█▆▄ Ouvindo`) |
+| **O que você disse** | Caixa **1** do painel **Ao vivo** (pode digitar e corrigir) |
+| **O prompt nascendo** | Caixa **2** do painel **Ao vivo**, em streaming (pode editar) |
+| **Recomeçar do zero** | Botão **Limpar**: caixas vazias e conversa nova no Claude Code |
 | **Tudo junto** | Painel **Ao vivo**, no ícone do Diz Aí na barra lateral: estado, ondas, fala, prompt e os botões Enviar, Ajustar, Copiar e Modo |
 | **O que já foi** | **Histórico**, logo abaixo do painel Ao vivo |
+
+Nenhuma aba é aberta: o Diz Aí salva `fala.md` e `prompt.md` em segundo plano, para o Histórico. Prefere abas? Ligue `dizAi.abrirArquivos`.
 
 "Ouvindo" só aparece quando o Windows confirma que o ditado está escutando. Se ele não abrir em 6 segundos, o Diz Aí avisa.
 

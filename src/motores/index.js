@@ -12,7 +12,7 @@ const DITADO_INICIAR = 'workbench.action.editorDictation.start';
 const DITADO_PARAR = 'workbench.action.editorDictation.stop';
 const MAX_GRAVACAO_MS = 10 * 60 * 1000;
 const ESPERA_WINDOWS_MS = 6000;   // tempo para o ditado do Windows começar a ouvir
-const FOLGA_PARADA_MS = 1500;     // o Windows parou de ouvir há esse tempo: encerra
+const FOLGA_PARADA_MS = 3000;     // o Windows parou de ouvir há esse tempo: encerra (ele solta o microfone entre frases)
 
 const aoMudar = new vscode.EventEmitter();       // { estado, detalhe }
 const aoTranscrever = new vscode.EventEmitter(); // { texto, alvo }
@@ -211,6 +211,12 @@ async function alternar(alvo = 'fala') {
   windowsParouEm = 0;
   mudar('abrindo');
   await ligarMedidor();
+  // Se o Windows ainda está ouvindo de antes, outro Win+H o desligaria: só acompanha.
+  if (await aux.ditadoWindows().catch(() => false)) {
+    windowsConfirmado = true;
+    mudar('ouvindo', 'o ditado do Windows já estava ouvindo');
+    return;
+  }
   await aux.winH();
   esperaWindows = setTimeout(async () => {
     if (windowsConfirmado || estado !== 'abrindo') return;

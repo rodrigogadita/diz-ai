@@ -1,6 +1,6 @@
-# O prompt nasce ao lado
+# O prompt nasce na caixa 2
 
-A cada pausa na fala, o Claude reescreve tudo em `prompt.md`, ao vivo:
+A cada pausa na fala, o Claude reescreve tudo na **caixa 2** do painel, ao vivo:
 
 > Crie um endpoint em Python que devolva os pedidos da semana em JSON, com paginação.
 
